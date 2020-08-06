@@ -50,8 +50,8 @@ func (s *Server) ListenAndServe(ctx context.Context) error {
 	requestInfoChan := make(chan proxy.RequestInfo)
 
 	proxyHandler, err := proxy.NewHandler(
-		fmt.Sprintf("127.0.0.1:%d", proxyPort),
-		"http://127.0.0.1:8081",
+		"localhost:8081",
+		"http://localhost:8081",
 		s.snapshotter,
 		s.recorder,
 		s.selector,
@@ -83,8 +83,8 @@ func (s *Server) ListenAndServe(ctx context.Context) error {
 		)
 	})
 
-	fmt.Printf("tool:  listening on http://127.0.0.1:%d\n", toolPort)
-	fmt.Printf("proxy: listening on http://127.0.0.1:%d\n", proxyPort)
+	fmt.Printf("tool:  listening on http://localhost:%d\n", toolPort)
+	fmt.Printf("proxy: listening on http://localhost:%d\n", proxyPort)
 
 	return g.Wait()
 }
