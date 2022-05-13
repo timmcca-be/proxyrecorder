@@ -17,9 +17,18 @@ data for a given kaid and exam group using the GTP user data export facility.
 
 Running the tool is simple:
 
-1. Start the dev server.
-2. Create a dev user and note the user's kaid.
-3. Start the proxy recorder.
+1. Start the dev server without test prep.
+```
+cd ~/Khan/webapp
+UNMANAGED=test-prep make serve
+```
+2. Start the test prep service on port 8309.
+```
+cd ~/Khan/webapp/services/test-prep
+SERVICE_PORT=8309 make serve
+```
+3. Create a dev user and note the user's kaid.
+4. Start the proxy recorder.
 
 ```
 go run cmd/proxyrecorder/main.go output ~/khan/webapp <kaid> lsat
@@ -37,13 +46,13 @@ After running this command you will see the output:
 
 ```
 tool:  listening on http://127.0.0.1:1234
-proxy: listening on http://127.0.0.1:7081
+proxy: listening on http://127.0.0.1:8109
 ```
 
 Open http://127.0.0.1:1234 to view the proxy recorder interface. Then, to start
-recording requests, go to http://127.0.0.1:7081. All requests sent to
-http://127.0.0.1:7081 are proxied to localhost:8081. 
+recording requests, go to http://127.0.0.1:8109. All requests sent to
+http://127.0.0.1:8109 are proxied to localhost:8309. 
 
-Note that if you go directly to localhost:8081 and perform any actions that
+Note that if you go directly to localhost:8309 and perform any actions that
 mutate data, the snapshot diffs will be incorrect since the proxy snapshots
 will include differences made by requests that weren't recorded.
