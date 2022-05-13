@@ -44,14 +44,14 @@ func NewServer(
 }
 
 func (s *Server) ListenAndServe(ctx context.Context) error {
-	proxyPort := 7081
+	proxyPort := 8109
 	toolPort := 1234
 
 	requestInfoChan := make(chan proxy.RequestInfo)
 
 	proxyHandler, err := proxy.NewHandler(
-		"localhost:8081",
-		"http://localhost:8081",
+		"localhost:8309",
+		"http://localhost:8309",
 		s.snapshotter,
 		s.recorder,
 		s.selector,

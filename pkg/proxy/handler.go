@@ -156,7 +156,7 @@ const (
 
 func (h *Handler) ProxyResponseHandler(resp *http.Response) error {
 	// Look for graphql requests.
-	if !strings.Contains(resp.Request.URL.Path, "/api/internal/graphql") {
+	if !strings.Contains(resp.Request.URL.Path, "/backend-graphql/") {
 		return nil
 	}
 

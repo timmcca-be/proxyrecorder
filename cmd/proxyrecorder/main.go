@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 
 	"github.com/dnerdy/proxyrecorder/pkg/proxy"
 	"github.com/dnerdy/proxyrecorder/pkg/recorder"
@@ -68,14 +67,12 @@ func main() {
 
 type RequestSelector struct{}
 
-func (s *RequestSelector) ShouldRecordRequest(r proxy.GraphQLRequest) bool {
-	return r.OperationName == "createGtpUserDataIfMissing" ||
-		strings.HasPrefix(r.OperationName, "gtp_")
+func (s *RequestSelector) ShouldRecordRequest(proxy.GraphQLRequest) bool {
+	return true
 }
 
 func (s *RequestSelector) ShouldSnapshotRequest(r proxy.GraphQLRequest) bool {
-	return r.OperationType == proxy.OperationTypeMutation ||
-		r.OperationName == "gtp_getTaskByDescriptor"
+	return r.OperationType == proxy.OperationTypeMutation
 }
 
 type Snapshotter struct {
@@ -93,9 +90,8 @@ func (s *Snapshotter) TakeSnapshot(_ proxy.GraphQLRequest) ([]byte, error) {
 	defer os.Remove(tmpfile.Name()) // clean up
 
 	cmd := exec.Command(
-		"tools/devshell.py",
-		"--script",
-		"test_prep/tools/dump_user_data.py",
+		"tools/gtp-user-data.sh",
+		"dump",
 		s.examGroupID,
 		s.kaid,
 		tmpfile.Name(),
@@ -105,17 +101,8 @@ func (s *Snapshotter) TakeSnapshot(_ proxy.GraphQLRequest) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s", err, out)
 	}
-	cmd = exec.Command(
-		"test_prep/tools/pickle_print.py",
-		tmpfile.Name(),
-	)
-	cmd.Dir = s.webappPath
-	out, err = cmd.CombinedOutput()
-	if err != nil {
-		return nil, fmt.Errorf("%w: %s", err, out)
-	}
 
-	return out, nil
+	return os.ReadFile(tmpfile.Name())
 }
 
 func (s *Snapshotter) SnapshotInfo() string {
