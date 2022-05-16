@@ -33,6 +33,49 @@ type RecordMessage = {|
 type Message = InitMessage | RecordMessage;
 */
 
+function buildHumanReadableValue(value) {
+    if (value.type === "entity") {
+        return buildHumanReadableEntity(value.value);
+    }
+    if (Array.isArray(value.value)) {
+        return value.value.map(buildHumanReadableValue);
+    }
+    if (typeof value.value === "string") {
+        try {
+            return JSON.parse(value.value);
+        } catch (_) {}
+    }
+    return value.value;
+}
+
+function buildHumanReadableEntity(entity) {
+    const newEntity = {};
+    if (entity.key != null) {
+        const key = entity.key.value;
+        newEntity.kind = key.kind;
+        if (key.id !== 0) {
+            newEntity.id = key.id;
+        }
+        if (key.name !== "") {
+            newEntity.name = key.name;
+        }
+    }
+    newEntity.properties = {};
+    for (const property of entity.properties.sort((a, b) => a.name.localeCompare(b.name))) {
+        newEntity.properties[property.name] = buildHumanReadableValue(property.value);
+    }
+    return newEntity;
+}
+
+function buildHumanReadableSnapshot(snapshot) {
+    const parsedSnapshot = JSON.parse(snapshot);
+    return JSON.stringify({
+        ...parsedSnapshot,
+        non_task_entities: parsedSnapshot.non_task_entities.map(buildHumanReadableEntity),
+        task_entities: parsedSnapshot.non_task_entities.map(buildHumanReadableEntity),
+    }, null, 4);
+}
+
 class Item {
     /*:: _recordInfo: RecordInfo */
     /*:: _selected: boolean */
@@ -149,7 +192,7 @@ class Content {
             snapshotHeader = "Most recent snapshot"
             snapshot = `
                 <pre class="c-verbatim-output x--limit-height">
-${record.currentSnapshot}
+${buildHumanReadableSnapshot(record.currentSnapshot)}
                 </pre>
             `
             buttons = "";
@@ -188,8 +231,8 @@ ${formatJSON(record.response)}
         }
 
         const dv = window.CodeMirror.MergeView(target, {
-            value: record.priorSnapshot,
-            orig: record.currentSnapshot,
+            value: buildHumanReadableSnapshot(record.priorSnapshot),
+            orig: buildHumanReadableSnapshot(record.currentSnapshot),
             lineNumbers: true,
             mode: "application/json",
             connect: "align",
