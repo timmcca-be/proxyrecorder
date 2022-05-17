@@ -72,7 +72,7 @@ function buildHumanReadableSnapshot(snapshot) {
     return JSON.stringify({
         ...parsedSnapshot,
         non_task_entities: parsedSnapshot.non_task_entities.map(buildHumanReadableEntity),
-        task_entities: parsedSnapshot.non_task_entities.map(buildHumanReadableEntity),
+        task_entities: parsedSnapshot.task_entities.map(buildHumanReadableEntity),
     }, null, 4);
 }
 
